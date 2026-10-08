@@ -6,18 +6,26 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Locale
 
 @Composable
-fun HomeScreen(onCatalogoClick: () -> Unit) {
-
+fun HomeScreen(
+    onCatalogoClick: () -> Unit,
+    onPesquisarClick: (String) -> Unit,
+    onCategoriaClick: (String) -> Unit,
+    onProdutoClick: (Int) -> Unit
+) {
     var pesquisa by remember { mutableStateOf("") }
 
     Column(
@@ -28,7 +36,6 @@ fun HomeScreen(onCatalogoClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Logo
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -45,14 +52,32 @@ fun HomeScreen(onCatalogoClick: () -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Pesquisa
         OutlinedTextField(
             value = pesquisa,
             onValueChange = { pesquisa = it },
             label = { Text("Buscar produtos...") },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    onPesquisarClick(pesquisa.trim())
+                }
+            )
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                onPesquisarClick(pesquisa.trim())
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Buscar")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -73,25 +98,37 @@ fun HomeScreen(onCatalogoClick: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+
             CategoryItem(
-                "Eletro",
-                Modifier.weight(1f),
-                onCatalogoClick
+                title = "Eletro",
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    onCategoriaClick("Eletrônicos")
+                }
             )
+
             CategoryItem(
-                "Casa",
-                Modifier.weight(1f),
-                onCatalogoClick
+                title = "Casa",
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    onCategoriaClick("Casa")
+                }
             )
+
             CategoryItem(
-                "Beleza",
-                Modifier.weight(1f),
-                onCatalogoClick
+                title = "Beleza",
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    onCategoriaClick("Beleza")
+                }
             )
+
             CategoryItem(
-                "Mais",
-                Modifier.weight(1f),
-                onCatalogoClick
+                title = "Mais",
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    onCategoriaClick("Todos")
+                }
             )
         }
 
@@ -106,23 +143,26 @@ fun HomeScreen(onCatalogoClick: () -> Unit) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        ProdutoDestaque(
-            "Fone de Ouvido",
-            "R$ 159,90",
-            onCatalogoClick
-        )
+        val destaques = DadosProdutos.produtos.take(3)
 
-        ProdutoDestaque(
-            "Smartwatch",
-            "R$ 299,90",
-            onCatalogoClick
-        )
+        if (destaques.isEmpty()) {
+            Text("Nenhum produto disponível.")
+        } else {
+            destaques.forEach { produto ->
 
-        ProdutoDestaque(
-            "Perfume",
-            "R$ 89,90",
-            onCatalogoClick
-        )
+                ProdutoDestaque(
+                    nome = produto.nome,
+                    preco = String.format(
+                        Locale.forLanguageTag("pt-BR"),
+                        "R$ %.2f",
+                        produto.preco
+                    ),
+                    onClick = {
+                        onProdutoClick(produto.id)
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -144,7 +184,7 @@ fun PromoBanner(onCatalogoClick: () -> Unit) {
                 fontWeight = FontWeight.Bold
             )
 
-            Text("Descontos especiais para você!")
+            Text("Confira nossos produtos!")
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -204,9 +244,17 @@ fun ProdutoDestaque(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(nome, fontWeight = FontWeight.Bold)
-                Text(preco, color = Color(0xFFA62A2A))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = nome,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = preco,
+                    color = Color(0xFFA62A2A)
+                )
             }
 
             Button(onClick = onClick) {

@@ -1,6 +1,9 @@
 
 package com.example.myapplication
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,18 +18,48 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
-import androidx.compose.foundation.clickable
 
 @Composable
 fun CatalogScreen(
     onAdicionarClick: () -> Unit,
-    onProdutoClick: (Int) -> Unit
+    onProdutoClick: (Int) -> Unit,
+    pesquisaInicial: String = "",
+    categoriaInicial: String = "Todos"
 ) {
-    var pesquisa by remember { mutableStateOf("") }
 
-    val produtosFiltrados = DadosProdutos.produtos.filter {
-        it.nome.contains(pesquisa, ignoreCase = true) ||
-                it.categoria.contains(pesquisa, ignoreCase = true)
+    var pesquisa by remember(pesquisaInicial) {
+        mutableStateOf(pesquisaInicial)
+    }
+
+    var categoriaSelecionada by remember(categoriaInicial) {
+        mutableStateOf(categoriaInicial)
+    }
+
+    val categorias = (
+            listOf("Todos", "Eletrônicos", "Casa", "Beleza") +
+                    DadosProdutos.produtos.map { it.categoria }
+            ).distinct()
+
+    val produtosFiltrados = DadosProdutos.produtos.filter { produto ->
+
+        val correspondePesquisa =
+            produto.nome.contains(
+                pesquisa,
+                ignoreCase = true
+            ) ||
+                    produto.categoria.contains(
+                        pesquisa,
+                        ignoreCase = true
+                    )
+
+        val correspondeCategoria =
+            categoriaSelecionada == "Todos" ||
+                    produto.categoria.equals(
+                        categoriaSelecionada,
+                        ignoreCase = true
+                    )
+
+        correspondePesquisa && correspondeCategoria
     }
 
     Column(
@@ -51,7 +84,30 @@ fun CatalogScreen(
             singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+
+            categorias.forEach { categoria ->
+
+                FilterChip(
+                    selected = categoriaSelecionada == categoria,
+                    onClick = {
+                        categoriaSelecionada = categoria
+                    },
+                    label = {
+                        Text(categoria)
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = onAdicionarClick,
@@ -70,61 +126,87 @@ fun CatalogScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                items = produtosFiltrados,
-                key = { it.id }
-            ) { produto ->
+        if (produtosFiltrados.isEmpty()) {
 
-                Card(
-                    modifier = Modifier.fillMaxWidth().clickable{ onProdutoClick(produto.id)},
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFF5F5F5)
-                    )
-                ) {
-                    Row(
+            Text(
+                text = "Nenhum produto encontrado.",
+                color = Color.Gray
+            )
+
+            TextButton(
+                onClick = {
+                    pesquisa = ""
+                    categoriaSelecionada = "Todos"
+                }
+            ) {
+                Text("Limpar filtros")
+            }
+
+        } else {
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                items(
+                    items = produtosFiltrados,
+                    key = { it.id }
+                ) { produto ->
+
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .clickable {
+                                onProdutoClick(produto.id)
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFF5F5F5)
+                        )
                     ) {
 
-                        Column(
-                            modifier = Modifier.weight(1f)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = produto.nome,
-                                fontWeight = FontWeight.Bold
-                            )
 
-                            Text(
-                                text = produto.categoria,
-                                color = Color.Gray
-                            )
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
 
-                            Text(
-                                text = String.format(
-                                    Locale.forLanguageTag("pt-BR"),
-                                    "R$ %.2f",
-                                    produto.preco
-                                ),
-                                color = Color(0xFFA62A2A),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                                Text(
+                                    text = produto.nome,
+                                    fontWeight = FontWeight.Bold
+                                )
 
-                        IconButton(
-                            onClick = {
-                                DadosProdutos.remover(produto)
+                                Text(
+                                    text = produto.categoria,
+                                    color = Color.Gray
+                                )
+
+                                Text(
+                                    text = String.format(
+                                        Locale.forLanguageTag("pt-BR"),
+                                        "R$ %.2f",
+                                        produto.preco
+                                    ),
+                                    color = Color(0xFFA62A2A),
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Remover produto",
-                                tint = Color.Red
-                            )
+
+                            IconButton(
+                                onClick = {
+                                    DadosProdutos.remover(produto)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Remover produto",
+                                    tint = Color.Red
+                                )
+                            }
                         }
                     }
                 }

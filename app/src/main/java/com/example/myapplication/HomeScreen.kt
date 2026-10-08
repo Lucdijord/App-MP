@@ -1,6 +1,7 @@
 
 package com.example.myapplication
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,16 +9,23 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
+
+private val VinhoHome = Color(0xFF9D2438)
+private val FundoHome = Color(0xFFFFF8F5)
 
 @Composable
 fun HomeScreen(
@@ -31,33 +39,72 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(FundoHome)
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 20.dp, vertical = 22.dp)
     ) {
 
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .background(Color(0xFFFFEBEE)),
-            contentAlignment = Alignment.Center
+        // Saudação e logo
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "MP",
-                color = Color(0xFFA62A2A),
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold
+            Image(
+                painter = painterResource(R.drawable.logo_mp),
+                contentDescription = "Logo Mercado Preso",
+                modifier = Modifier.size(58.dp),
+                contentScale = ContentScale.Fit
             )
+
+            Column {
+                Text(
+                    text = "MERCADO PRESO",
+                    color = VinhoHome,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+
+                Text(
+                    text = "Olá! O que vamos encontrar?",
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF222222)
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(20.dp))
 
+        // Pesquisa
         OutlinedTextField(
             value = pesquisa,
             onValueChange = { pesquisa = it },
-            label = { Text("Buscar produtos...") },
+            placeholder = {
+                Text("Buscar no catálogo")
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null
+                )
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        onPesquisarClick(pesquisa.trim())
+                    }
+                ) {
+                    Icon(
+                        Icons.Default.ArrowForward,
+                        contentDescription = "Pesquisar",
+                        tint = VinhoHome
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Search
             ),
@@ -68,80 +115,128 @@ fun HomeScreen(
             )
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(22.dp))
 
-        Button(
-            onClick = {
-                onPesquisarClick(pesquisa.trim())
-            },
-            modifier = Modifier.fillMaxWidth()
+        // Banner de ofertas
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = VinhoHome
+            )
         ) {
-            Text("Buscar")
+            Column(
+                modifier = Modifier.padding(22.dp)
+            ) {
+                Text(
+                    text = "UM MUNDO DE ESCOLHAS",
+                    color = Color.White,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                Text(
+                    text = "Boas ofertas,\nsem complicação.",
+                    color = Color.White,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 32.sp
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = "Explore produtos e encontre algo para você.",
+                    color = Color(0xFFFFE2E7),
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp
+                )
+
+                Spacer(Modifier.height(18.dp))
+
+                Button(
+                    onClick = onCatalogoClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = VinhoHome
+                    )
+                ) {
+                    Text("Explorar catálogo")
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.ShoppingBag,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        PromoBanner(onCatalogoClick)
-
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(26.dp))
 
         Text(
-            text = "Categorias",
+            text = "Explore por categoria",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start)
+            color = Color(0xFF222222)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(14.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            CategoriaHome(
+                nome = "Eletrônicos",
+                simbolo = "📱",
+                modifier = Modifier.weight(1f)
+            ) {
+                onCategoriaClick("Eletrônicos")
+            }
 
-            CategoryItem(
-                title = "Eletro",
-                modifier = Modifier.weight(1f),
-                onClick = {
-                    onCategoriaClick("Eletrônicos")
-                }
-            )
+            CategoriaHome(
+                nome = "Casa",
+                simbolo = "🏠",
+                modifier = Modifier.weight(1f)
+            ) {
+                onCategoriaClick("Casa")
+            }
 
-            CategoryItem(
-                title = "Casa",
-                modifier = Modifier.weight(1f),
-                onClick = {
-                    onCategoriaClick("Casa")
-                }
-            )
-
-            CategoryItem(
-                title = "Beleza",
-                modifier = Modifier.weight(1f),
-                onClick = {
-                    onCategoriaClick("Beleza")
-                }
-            )
-
-            CategoryItem(
-                title = "Mais",
-                modifier = Modifier.weight(1f),
-                onClick = {
-                    onCategoriaClick("Todos")
-                }
-            )
+            CategoriaHome(
+                nome = "Beleza",
+                simbolo = "✨",
+                modifier = Modifier.weight(1f)
+            ) {
+                onCategoriaClick("Beleza")
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(26.dp))
 
-        Text(
-            text = "Destaques para você",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Em destaque",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            TextButton(onClick = onCatalogoClick) {
+                Text(
+                    text = "Ver todos",
+                    color = VinhoHome
+                )
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
 
         val destaques = DadosProdutos.produtos.take(3)
 
@@ -149,117 +244,117 @@ fun HomeScreen(
             Text("Nenhum produto disponível.")
         } else {
             destaques.forEach { produto ->
-
-                ProdutoDestaque(
-                    nome = produto.nome,
-                    preco = String.format(
-                        Locale.forLanguageTag("pt-BR"),
-                        "R$ %.2f",
-                        produto.preco
-                    ),
+                Card(
                     onClick = {
                         onProdutoClick(produto.id)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(17.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 2.dp
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+
+                        Box(
+                            modifier = Modifier
+                                .size(58.dp)
+                                .background(
+                                    Color(0xFFF9E8EB),
+                                    androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ShoppingBag,
+                                contentDescription = null,
+                                tint = VinhoHome,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = produto.nome,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+
+                            Text(
+                                text = produto.categoria,
+                                color = Color.Gray,
+                                fontSize = 12.sp
+                            )
+
+                            Text(
+                                text = String.format(
+                                    Locale.forLanguageTag("pt-BR"),
+                                    "R$ %.2f",
+                                    produto.preco
+                                ),
+                                color = VinhoHome,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Icon(
+                            Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = VinhoHome
+                        )
                     }
-                )
+                }
             }
         }
     }
 }
 
 @Composable
-fun PromoBanner(onCatalogoClick: () -> Unit) {
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFCDD2)
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Ofertas imperdíveis",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text("Confira nossos produtos!")
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Button(
-                onClick = onCatalogoClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.DarkGray
-                )
-            ) {
-                Text("Ver ofertas")
-            }
-        }
-    }
-}
-
-@Composable
-fun CategoryItem(
-    title: String,
+private fun CategoriaHome(
+    nome: String,
+    simbolo: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Surface(
-        modifier = modifier
-            .height(70.dp)
-            .clickable { onClick() },
-        color = Color(0xFFF0F0F0),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-@Composable
-fun ProdutoDestaque(
-    nome: String,
-    preco: String,
-    onClick: () -> Unit
-) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
+        onClick = onClick,
+        modifier = modifier.height(100.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(17.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF5F5F5)
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
         )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            Text(
+                text = simbolo,
+                fontSize = 27.sp
+            )
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = nome,
-                    fontWeight = FontWeight.Bold
-                )
+            Spacer(Modifier.height(9.dp))
 
-                Text(
-                    text = preco,
-                    color = Color(0xFFA62A2A)
-                )
-            }
-
-            Button(onClick = onClick) {
-                Text("Ver")
-            }
+            Text(
+                text = nome,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }

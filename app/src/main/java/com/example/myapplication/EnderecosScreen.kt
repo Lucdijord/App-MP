@@ -24,18 +24,7 @@ fun EnderecosScreen(
     onVoltar: () -> Unit
 ) {
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Meus Endereços") },
-                navigationIcon = {
-                    TextButton(onClick = onVoltar) {
-                        Text("Voltar")
-                    }
-                }
-            )
-        }
-    ) { padding ->
+    Scaffold() { padding ->
 
         Column(
             modifier = Modifier

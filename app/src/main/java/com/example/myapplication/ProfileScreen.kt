@@ -11,6 +11,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun ProfileScreen(
@@ -26,19 +29,12 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .background(Color(0xFFFFEBEE)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "MP",
-                color = Color(0xFFA62A2A),
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Image(
+            painter = painterResource(id = R.drawable.logo_mp),
+            contentDescription = "Logo App MP",
+            modifier = Modifier.size(100.dp),
+            contentScale = ContentScale.Fit
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 

@@ -27,21 +27,7 @@ fun AdicionarEnderecoScreen(
 
     val context = LocalContext.current
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Adicionar Endereço") },
-                navigationIcon = {
-                    IconButton(onClick = onVoltar) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Voltar"
-                        )
-                    }
-                }
-            )
-        }
-    ) { padding ->
+    Scaffold() { padding ->
 
         Column(
             modifier = Modifier

@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,49 +20,71 @@ import java.util.Locale
 
 @Composable
 fun CarrinhoScreen(
-    onCatalogoClick: () -> Unit
+    onCatalogoClick: () -> Unit,
+    onProdutoClick: (Int) -> Unit
 ) {
     val itens = DadosCarrinho.itens
     val formatoBrasil = Locale.forLanguageTag("pt-BR")
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    val produtosRecomendados = DadosProdutos.produtos.filter { produto ->
+        itens.none { it.produto.id == produto.id }
+    }
+
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize()
     ) {
+        val alturaDisponivel = maxHeight
 
-        Text(
-            text = "Meu Carrinho",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (itens.isEmpty()) {
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text("Seu carrinho está vazio!")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(onClick = onCatalogoClick) {
-                    Text("Ver produtos")
-                }
+            item {
+                Text(
+                    text = "Meu Carrinho",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
-        } else {
+            if (itens.isEmpty()) {
 
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(
+                                min = (alturaDisponivel * 0.38f)
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(55.dp),
+                            tint = Color.Gray
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text("Seu carrinho está vazio!")
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = onCatalogoClick
+                        ) {
+                            Text("Ver produtos")
+                        }
+                    }
+                }
+
+            } else {
+
                 items(
                     items = itens,
                     key = { it.produto.id }
@@ -82,11 +106,14 @@ fun CarrinhoScreen(
                             Column(
                                 modifier = Modifier.weight(1f)
                             ) {
+
                                 Text(
                                     text = item.produto.nome,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp
                                 )
+
+                                Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
                                     text = "Quantidade: ${item.quantidade}"
@@ -119,41 +146,149 @@ fun CarrinhoScreen(
                         }
                     }
                 }
+
+                item {
+                    HorizontalDivider()
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        Text(
+                            text = "Total:",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = String.format(
+                                formatoBrasil,
+                                "R$ %.2f",
+                                DadosCarrinho.calcularTotal()
+                            ),
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFA62A2A)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = onCatalogoClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Continuar comprando")
+                    }
+                }
             }
 
-            HorizontalDivider()
+            if (produtosRecomendados.isNotEmpty()) {
 
-            Spacer(modifier = Modifier.height(16.dp))
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HorizontalDivider()
+                }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Total:",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
 
-                Text(
-                    text = String.format(
-                        formatoBrasil,
-                        "R$ %.2f",
-                        DadosCarrinho.calcularTotal()
-                    ),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFA62A2A)
-                )
-            }
+                        Text(
+                            text = "Você também pode gostar",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                        TextButton(
+                            onClick = onCatalogoClick
+                        ) {
+                            Text("Ver mais")
+                        }
+                    }
+                }
 
-            Button(
-                onClick = onCatalogoClick,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Continuar comprando")
+                items(
+                    items = produtosRecomendados.chunked(2)
+                ) { linha ->
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+
+                        linha.forEach { produto ->
+
+                            Card(
+                                onClick = {
+                                    onProdutoClick(produto.id)
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.White
+                                ),
+                                elevation = CardDefaults.cardElevation(
+                                    defaultElevation = 2.dp
+                                )
+                            ) {
+
+                                Column(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(85.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ShoppingBag,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(50.dp),
+                                            tint = Color(0xFFB94A60)
+                                        )
+                                    }
+
+                                    Text(
+                                        text = produto.nome,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 2
+                                    )
+
+                                    Text(
+                                        text = String.format(
+                                            formatoBrasil,
+                                            "R$ %.2f",
+                                            produto.preco
+                                        ),
+                                        color = Color(0xFFA62A2A),
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Text(
+                                        text = "Ver produto →",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = Color(0xFFB94A60)
+                                    )
+                                }
+                            }
+                        }
+
+                        if (linha.size == 1) {
+                            Spacer(
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

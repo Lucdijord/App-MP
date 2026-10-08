@@ -1,8 +1,11 @@
 
 package com.example.myapplication
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
@@ -10,17 +13,47 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.*
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
 
     val navController = rememberNavController()
-
     val telaAtual by navController.currentBackStackEntryAsState()
     val rotaAtual = telaAtual?.destination?.route
+
+    val tituloTela = when (rotaAtual) {
+        Rotas.INICIO -> "Início"
+        Rotas.CATALOGO -> "Catálogo"
+        Rotas.CARRINHO -> "Carrinho"
+        Rotas.PERFIL -> "Meu Perfil"
+        Rotas.ADICIONAR_PRODUTO -> "Adicionar Produto"
+        Rotas.DETALHE_PRODUTO -> "Detalhes do Produto"
+        Rotas.ENDERECOS -> "Meus Endereços"
+        Rotas.ADICIONAR_ENDERECO -> "Adicionar Endereço"
+        Rotas.DETALHE_ENDERECO -> "Detalhes do Endereço"
+        else -> "App MP"
+    }
+
+    val telasPrincipais = listOf(
+        Rotas.INICIO,
+        Rotas.CATALOGO,
+        Rotas.CARRINHO,
+        Rotas.PERFIL
+    )
+
+    val mostrarVoltar =
+        rotaAtual != null && rotaAtual !in telasPrincipais
 
     var pesquisaCatalogo by remember {
         mutableStateOf("")
@@ -37,13 +70,115 @@ fun AppNavigation() {
         pesquisaCatalogo = pesquisa
         categoriaCatalogo = categoria
 
-        navController.navigate(Rotas.CATALOGO)
+        navController.navigate(Rotas.CATALOGO) {
+            launchSingleTop = true
+        }
     }
 
     Scaffold(
-        bottomBar = {
-            NavigationBar {
 
+
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            text = "Mercado Preso",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+
+                        Text(
+                            text = "Seu mercado, do seu jeito",
+                            fontSize = 11.sp,
+                            color = Color(0xFFFFDDE3)
+                        )
+                    }
+                },
+
+                navigationIcon = {
+                    if (mostrarVoltar) {
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Voltar",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                },
+
+                actions = {
+                    IconButton(
+                        onClick = {
+                            abrirCatalogo()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Pesquisar produtos",
+                            tint = Color.White
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (rotaAtual != Rotas.CARRINHO) {
+                                navController.navigate(Rotas.CARRINHO) {
+                                    popUpTo(Rotas.INICIO) {
+                                        inclusive = false
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = "Abrir carrinho",
+                            tint = Color.White
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (rotaAtual != Rotas.PERFIL) {
+                                navController.navigate(Rotas.PERFIL) {
+                                    popUpTo(Rotas.INICIO) {
+                                        inclusive = false
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Abrir perfil",
+                            tint = Color.White
+                        )
+                    }
+                },
+
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF9D2438)
+                )
+            )
+        },
+
+
+
+
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color(0xFF9D2438),
+                contentColor = Color.White
+            ) {
                 val abas = listOf(
                     Triple("Início", Rotas.INICIO, Icons.Default.Home),
                     Triple("Catálogo", Rotas.CATALOGO, Icons.Default.List),
@@ -52,11 +187,10 @@ fun AppNavigation() {
                 )
 
                 abas.forEach { (nome, rota, icone) ->
-
                     NavigationBarItem(
                         selected = rotaAtual == rota,
-                        onClick = {
 
+                        onClick = {
                             if (rotaAtual != rota) {
 
                                 if (rota == Rotas.CATALOGO) {
@@ -72,20 +206,31 @@ fun AppNavigation() {
                                 }
                             }
                         },
+
                         icon = {
                             Icon(
                                 imageVector = icone,
                                 contentDescription = nome
                             )
                         },
+
                         label = {
                             Text(nome)
-                        }
+                        },
+
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.White,
+                            indicatorColor = Color(0xFFB94A60),
+                            unselectedIconColor = Color(0xFFFFDDE3),
+                            unselectedTextColor = Color(0xFFFFDDE3)
+                        )
                     )
                 }
             }
-        }
-    ) { padding ->
+        },
+
+        ) { padding ->
 
         NavHost(
             navController = navController,
@@ -94,22 +239,17 @@ fun AppNavigation() {
         ) {
 
             composable(Rotas.INICIO) {
-
                 HomeScreen(
                     onCatalogoClick = {
                         abrirCatalogo()
                     },
 
                     onPesquisarClick = { pesquisa ->
-                        abrirCatalogo(
-                            pesquisa = pesquisa
-                        )
+                        abrirCatalogo(pesquisa = pesquisa)
                     },
 
                     onCategoriaClick = { categoria ->
-                        abrirCatalogo(
-                            categoria = categoria
-                        )
+                        abrirCatalogo(categoria = categoria)
                     },
 
                     onProdutoClick = { id ->
@@ -120,9 +260,7 @@ fun AppNavigation() {
                 )
             }
 
-
             composable(Rotas.CATALOGO) {
-
                 CatalogScreen(
                     pesquisaInicial = pesquisaCatalogo,
                     categoriaInicial = categoriaCatalogo,
@@ -142,7 +280,6 @@ fun AppNavigation() {
             }
 
             composable(Rotas.ADICIONAR_PRODUTO) {
-
                 AdicionarProdutoScreen(
                     onVoltar = {
                         navController.popBackStack()
@@ -170,7 +307,6 @@ fun AppNavigation() {
                     },
 
                     onAdicionarCarrinho = { produto, quantidade ->
-
                         DadosCarrinho.adicionar(
                             produto,
                             quantidade
@@ -187,24 +323,19 @@ fun AppNavigation() {
             }
 
             composable(Rotas.CARRINHO) {
-
                 CarrinhoScreen(
                     onCatalogoClick = {
-                        pesquisaCatalogo = ""
-                        categoriaCatalogo = "Todos"
-
-                        navController.navigate(Rotas.CATALOGO) {
-                            popUpTo(Rotas.INICIO) {
-                                inclusive = false
-                            }
-                            launchSingleTop = true
-                        }
+                        abrirCatalogo()
+                    },
+                    onProdutoClick = { id ->
+                        navController.navigate(
+                            Rotas.detalheProduto(id)
+                        )
                     }
                 )
             }
 
             composable(Rotas.PERFIL) {
-
                 ProfileScreen(
                     onEnderecosClick = {
                         navController.navigate(
@@ -219,7 +350,6 @@ fun AppNavigation() {
             }
 
             composable(Rotas.ENDERECOS) {
-
                 EnderecosScreen(
                     onAdicionarClick = {
                         navController.navigate(
@@ -240,7 +370,6 @@ fun AppNavigation() {
             }
 
             composable(Rotas.ADICIONAR_ENDERECO) {
-
                 AdicionarEnderecoScreen(
                     onVoltar = {
                         navController.popBackStack()

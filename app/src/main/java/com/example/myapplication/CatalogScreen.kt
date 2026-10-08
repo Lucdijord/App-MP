@@ -1,14 +1,15 @@
 
 package com.example.myapplication
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
 
+private val VinhoCatalogo = Color(0xFF9D2438)
+private val FundoCatalogo = Color(0xFFFFF8F5)
+
 @Composable
 fun CatalogScreen(
     onAdicionarClick: () -> Unit,
@@ -26,7 +30,6 @@ fun CatalogScreen(
     pesquisaInicial: String = "",
     categoriaInicial: String = "Todos"
 ) {
-
     var pesquisa by remember(pesquisaInicial) {
         mutableStateOf(pesquisaInicial)
     }
@@ -35,56 +38,78 @@ fun CatalogScreen(
         mutableStateOf(categoriaInicial)
     }
 
+    var ordenarPorNome by remember {
+        mutableStateOf(true)
+    }
+
     val categorias = (
             listOf("Todos", "Eletrônicos", "Casa", "Beleza") +
                     DadosProdutos.produtos.map { it.categoria }
             ).distinct()
 
-    val produtosFiltrados = DadosProdutos.produtos.filter { produto ->
+    val produtosFiltrados = DadosProdutos.produtos
+        .filter { produto ->
 
-        val correspondePesquisa =
-            produto.nome.contains(
-                pesquisa,
-                ignoreCase = true
-            ) ||
-                    produto.categoria.contains(
-                        pesquisa,
-                        ignoreCase = true
-                    )
+            val correspondePesquisa =
+                produto.nome.contains(pesquisa, ignoreCase = true) ||
+                        produto.categoria.contains(pesquisa, ignoreCase = true)
 
-        val correspondeCategoria =
-            categoriaSelecionada == "Todos" ||
-                    produto.categoria.equals(
-                        categoriaSelecionada,
-                        ignoreCase = true
-                    )
+            val correspondeCategoria =
+                categoriaSelecionada == "Todos" ||
+                        produto.categoria.equals(
+                            categoriaSelecionada,
+                            ignoreCase = true
+                        )
 
-        correspondePesquisa && correspondeCategoria
-    }
+            correspondePesquisa && correspondeCategoria
+        }
+        .let { lista ->
+            if (ordenarPorNome) {
+                lista.sortedBy { it.nome.lowercase() }
+            } else {
+                lista.sortedBy { it.preco }
+            }
+        }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(FundoCatalogo)
+            .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
 
         Text(
-            text = "Catálogo de Produtos",
-            fontSize = 22.sp,
+            text = "Catálogo",
+            fontSize = 26.sp,
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Encontre o que você procura",
+            fontSize = 14.sp,
+            color = Color.DarkGray
+        )
+
+        Spacer(Modifier.height(18.dp))
 
         OutlinedTextField(
             value = pesquisa,
             onValueChange = { pesquisa = it },
-            label = { Text("Buscar produtos") },
+            placeholder = {
+                Text("Buscar por nome ou categoria")
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(15.dp),
             singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         Row(
             modifier = Modifier
@@ -92,9 +117,7 @@ fun CatalogScreen(
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
             categorias.forEach { categoria ->
-
                 FilterChip(
                     selected = categoriaSelecionada == categoria,
                     onClick = {
@@ -107,83 +130,149 @@ fun CatalogScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(14.dp))
 
-        Button(
-            onClick = onAdicionarClick,
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Adicionar produto")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Produtos disponíveis",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (produtosFiltrados.isEmpty()) {
-
             Text(
-                text = "Nenhum produto encontrado.",
-                color = Color.Gray
+                text = "${produtosFiltrados.size} produto(s)",
+                fontSize = 14.sp,
+                color = Color.DarkGray
             )
 
             TextButton(
                 onClick = {
-                    pesquisa = ""
-                    categoriaSelecionada = "Todos"
+                    ordenarPorNome = !ordenarPorNome
                 }
             ) {
-                Text("Limpar filtros")
+                Icon(
+                    Icons.Default.Sort,
+                    contentDescription = null,
+                    tint = VinhoCatalogo
+                )
+
+                Spacer(Modifier.width(5.dp))
+
+                Text(
+                    text = if (ordenarPorNome) "Nome" else "Preço",
+                    color = VinhoCatalogo
+                )
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Button(
+            onClick = onAdicionarClick,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = VinhoCatalogo
+            )
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = null
+            )
+
+            Spacer(Modifier.width(8.dp))
+
+            Text("Adicionar produto")
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        if (produtosFiltrados.isEmpty()) {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 35.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Nenhum produto encontrado.",
+                    color = Color.Gray
+                )
+
+                TextButton(
+                    onClick = {
+                        pesquisa = ""
+                        categoriaSelecionada = "Todos"
+                    }
+                ) {
+                    Text("Limpar filtros")
+                }
             }
 
         } else {
 
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-
                 items(
                     items = produtosFiltrados,
                     key = { it.id }
                 ) { produto ->
 
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onProdutoClick(produto.id)
-                            },
+                        onClick = {
+                            onProdutoClick(produto.id)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(17.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFF5F5F5)
+                            containerColor = Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 2.dp
                         )
                     ) {
-
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(15.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
+
+                            Box(
+                                modifier = Modifier
+                                    .size(55.dp)
+                                    .background(
+                                        Color(0xFFF9E8EB),
+                                        RoundedCornerShape(12.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.ShoppingBag,
+                                    contentDescription = null,
+                                    tint = VinhoCatalogo,
+                                    modifier = Modifier.size(27.dp)
+                                )
+                            }
 
                             Column(
                                 modifier = Modifier.weight(1f)
                             ) {
-
                                 Text(
                                     text = produto.nome,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
                                 )
 
                                 Text(
                                     text = produto.categoria,
+                                    fontSize = 12.sp,
                                     color = Color.Gray
                                 )
+
+                                Spacer(Modifier.height(4.dp))
 
                                 Text(
                                     text = String.format(
@@ -191,8 +280,9 @@ fun CatalogScreen(
                                         "R$ %.2f",
                                         produto.preco
                                     ),
-                                    color = Color(0xFFA62A2A),
-                                    fontWeight = FontWeight.Bold
+                                    color = VinhoCatalogo,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
                                 )
                             }
 
@@ -203,8 +293,8 @@ fun CatalogScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Remover produto",
-                                    tint = Color.Red
+                                    contentDescription = "Excluir produto",
+                                    tint = VinhoCatalogo
                                 )
                             }
                         }

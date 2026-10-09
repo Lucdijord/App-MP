@@ -72,7 +72,10 @@ fun ProfileScreen(
 
                 Button(
                     onClick = onEnderecosClick,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFD32F2F)
+                    )
                 ) {
                     Text("Meus Endereços")
                 }

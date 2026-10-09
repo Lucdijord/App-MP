@@ -1,10 +1,9 @@
-
 package com.example.myapplication
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -16,106 +15,114 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnderecosScreen(
     onAdicionarClick: () -> Unit,
     onEnderecoClick: (Int) -> Unit,
     onVoltar: () -> Unit
 ) {
+    val vinho = Color(0xFF9D2438)
 
-    Scaffold() { padding ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+        Text(
+            text = "Endereços cadastrados",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onAdicionarClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = vinho,
+                contentColor = Color.White
+            )
         ) {
+            Text("Adicionar Endereço")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (DadosEnderecos.enderecos.isEmpty()) {
 
             Text(
-                "Endereços cadastrados",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                text = "Nenhum endereço cadastrado.",
+                color = Color.Gray
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        } else {
 
-            Button(
-                onClick = onAdicionarClick,
-                modifier = Modifier.fillMaxWidth()
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                Text("Adicionar Endereço")
-            }
+                items(
+                    items = DadosEnderecos.enderecos,
+                    key = { it.id }
+                ) { endereco ->
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (DadosEnderecos.enderecos.isEmpty()) {
-
-                Text("Nenhum endereço cadastrado.")
-
-            } else {
-
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(
-                        items = DadosEnderecos.enderecos,
-                        key = { it.id }
-                    ) { endereco ->
-
-                        Card(
+                    Card(
+                        onClick = {
+                            onEnderecoClick(endereco.id)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 2.dp
+                        )
+                    ) {
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    onEnderecoClick(endereco.id)
-                                },
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFF5F5F5)
-                            )
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.weight(1f)
                             ) {
+                                Text(
+                                    text = endereco.rua,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
 
-                                Column(
-                                    modifier = Modifier.weight(1f)
-                                ) {
+                                Spacer(modifier = Modifier.height(4.dp))
 
-                                    Text(
-                                        text = endereco.rua,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                Text(
+                                    text = "Nº ${endereco.numero}"
+                                )
 
-                                    Text(
-                                        text = "Nº ${endereco.numero}"
-                                    )
+                                Text(
+                                    text = endereco.bairro
+                                )
 
-                                    Text(
-                                        text = endereco.bairro
-                                    )
+                                Text(
+                                    text = endereco.cidade,
+                                    color = Color.Gray
+                                )
+                            }
 
-                                    Text(
-                                        text = endereco.cidade,
-                                        color = Color.Gray
-                                    )
+                            IconButton(
+                                onClick = {
+                                    DadosEnderecos.remover(endereco)
                                 }
-
-                                IconButton(
-                                    onClick = {
-                                        DadosEnderecos.remover(endereco)
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Remover endereço",
-                                        tint = Color.Red
-                                    )
-                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Remover endereço",
+                                    tint = vinho
+                                )
                             }
                         }
                     }

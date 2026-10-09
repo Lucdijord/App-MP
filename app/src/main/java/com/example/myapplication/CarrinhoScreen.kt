@@ -76,7 +76,10 @@ fun CarrinhoScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                            onClick = onCatalogoClick
+                            onClick = onCatalogoClick,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red
+                            )
                         ) {
                             Text("Ver produtos")
                         }
@@ -276,7 +279,7 @@ fun CarrinhoScreen(
                                     Text(
                                         text = "Ver produto →",
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = Color(0xFFB94A60)
+                                        color = Color(0xFFD32F2F)
                                     )
                                 }
                             }
